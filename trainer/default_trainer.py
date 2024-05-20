@@ -39,6 +39,8 @@ from datasets.registration.register_bdd100k_semseg import register_all_sunrgbd_s
 from datasets.registration.register_coco_panoptic_annos_caption_grounding import \
     register_coco_panoptic_annos_caption_grounding_sem_seg
 
+from collections import OrderedDict
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +67,7 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
         from pipeline.XDecoderPipeline import XDecoderPipeline
         self.pipeline = XDecoderPipeline(self.opt)
 
-        register_coco_panoptic_annos_caption_grounding_sem_seg("coco_",
+        register_coco_panoptic_annos_caption_grounding_sem_seg("coco_2017_train",
                                                                self.get_metadata(),
                                                                '/content/drive/MyDrive/dataset/MRI/train/images/',
                                                                '/content/drive/MyDrive/dataset/MRI/train/panoptic/',
@@ -103,7 +105,7 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
         thing_dataset_id_to_contiguous_id = {}
         stuff_dataset_id_to_contiguous_id = {}
 
-        for i, cat in enumerate(__COCO_CATEGORIES):
+        for i, cat in enumerate(CUSTOM_DATASET_META_DATA):
             if cat["isthing"]:
                 thing_dataset_id_to_contiguous_id[cat["id"]] = i
             # else:
@@ -287,6 +289,9 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
         Training
         """
         self.init_train()
+
+        best_mIOU = -1
+
         current_optim_steps = self._get_and_validate_current_optim_steps()
         num_epochs = self.opt['SOLVER']['MAX_NUM_EPOCHS']
 
@@ -351,8 +356,13 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
 
                 # evaluate and save ckpt every epoch
                 if batch_idx + 1 == self.train_params['updates_per_epoch']:
-                    self.save_checkpoint(self.train_params['num_updates'])
+                    # self.save_checkpoint(self.train_params['num_updates'])
                     results = self._eval_on_set(self.save_folder)
+
+                    if results["bdd10k_val_sem_seg/sem_seg"]["sem_seg"]["mIoU"] > best_mIOU:
+                        best_mIOU = results["bdd10k_val_sem_seg/sem_seg"]["sem_seg"]["mIoU"]
+                        self.models['default'].save_pretrained(self.opt["SAVE_DIR"], "best")
+
                     if self.opt['rank'] == 0 and self.opt['WANDB']:
                         wandb.log(results)
                     break

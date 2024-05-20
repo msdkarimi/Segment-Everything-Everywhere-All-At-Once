@@ -187,7 +187,7 @@ def register_coco_panoptic_annos_caption_grounding_sem_seg(
         semantic_name,
         lambda: load_coco_panoptic_json(panoptic_json, image_root, panoptic_root, sem_seg_root, caption_root, grounding_root, metadata),
     )
-    MetadataCatalog.get('logistic').set(caption_similarity_pth=similarity_pth)
+    # MetadataCatalog.get('logistic').set(caption_similarity_pth=similarity_pth)
     MetadataCatalog.get(semantic_name).set(
         sem_seg_root=sem_seg_root,
         panoptic_root=panoptic_root,
