@@ -22,7 +22,7 @@ from utils import prompt_engineering
 from modeling.language import build_tokenizer
 from modeling.language.misc import text_noun_with_prompt_all
 from modeling.utils import configurable
-
+from utils.constants import CUSTOM_DATASET_META_DATA
 from ..visual_sampler.sampler import build_shape_sampler
 
 __all__ = ["COCOPanopticInteractiveDatasetMapper"]
@@ -227,7 +227,7 @@ class COCOPanopticInteractiveDatasetMapper:
                     classes.append(class_id)
                     masks.append(pan_seg_gt == segment_info["id"])
                         
-            is_things = [COCO_CATEGORIES[idx]['isthing'] for idx in classes]
+            is_things = [CUSTOM_DATASET_META_DATA[idx]['isthing'] for idx in classes]
             classes = np.array(classes)
             is_things = np.array(is_things)
             instances.gt_classes = torch.tensor(classes, dtype=torch.int64)
@@ -312,7 +312,7 @@ class COCOPanopticInteractiveDatasetMapper:
                     texts_grd = ['none']
                     hash_grd = np.array([hash(txt) for txt in texts_grd])
                 else:
-                    texts_grd = np.array([COCO_CATEGORIES[idx]['name'] for idx in classes])
+                    texts_grd = np.array([CUSTOM_DATASET_META_DATA[idx]['name'] for idx in classes])
                     hash_grd = np.array([hash(txt) for txt in texts_grd])
                     unique_hash_grd = np.unique(hash_grd)
                     np.random.shuffle(unique_hash_grd)

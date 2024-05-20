@@ -222,13 +222,9 @@ ATTENTION_ARCH:
   QUERY_NUMBER: 3
 
 DATASETS:
-  TRAIN: ["coco_2017_train_panoptic_filtrefgumdval_with_sem_seg_caption_grounding_lvis",]
+  TRAIN: ["coco_2017_train_with_sem_seg_caption_grounding",]
   # TRAIN: ["coco_2017_train_panoptic_with_sem_seg_caption_grounding",]
-  TEST: ["coco_2017_val_panoptic_with_sem_seg", "pascalvoc_val_Point", "refcocog_val_umd"]  # to evaluate instance and semantic performance as well
-  # TEST: ["pascalvoc_val_Point"] # [pascalvoc, openimage600, ade600, davis, cocomini], [Point, Scribble, Polygon, Circle, Box]
-  # TEST: ["cocomini_val_Point", "cocomini_val_Circle", "cocomini_val_Scribble", "cocomini_val_Polygon", "cocomini_val_Box"] # [pascalvoc, openimage600, ade600, davis, cocomini], [Point, Scribble, Polygon, Circle, Box]
-  # TEST: ["ade600_val_Point", "ade600_val_Circle", "ade600_val_Scribble", "ade600_val_Polygon", "ade600_val_Box"] # [pascalvoc, openimage600, ade600, davis, cocomini], [Point, Scribble, Polygon, Circle, Box]
-  # TEST: ["openimage600_val_Point", "openimage600_val_Circle", "openimage600_val_Scribble", "openimage600_val_Polygon", "openimage600_val_Box"] # [pascalvoc, openimage600, ade600, davis, cocomini], [Point, Scribble, Polygon, Circle, Box]
+  TEST: ["bdd10k_val_sem_seg"]
   CLASS_CONCAT: false
   SIZE_DIVISIBILITY: 32
   PROPOSAL_FILES_TRAIN: []

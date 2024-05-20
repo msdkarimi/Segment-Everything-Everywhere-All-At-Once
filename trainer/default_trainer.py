@@ -33,6 +33,12 @@ from .utils_trainer import UtilsTrainer
 from .utils.misc import *
 from .utils.serialization import JSONEncoder, filter_jsonable
 
+from utils.constants import CUSTOM_DATASET_META_DATA
+from detectron2.data import MetadataCatalog, DatasetCatalog
+from datasets.registration.register_bdd100k_semseg import register_all_sunrgbd_seg
+from datasets.registration.register_coco_panoptic_annos_caption_grounding import \
+    register_coco_panoptic_annos_caption_grounding_sem_seg
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,10 +57,65 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
         spec.loader.exec_module(module)
         logger.info(f"Imported {base_name} at base_path {self.opt['base_path']}")
 
-        pipeline_module = importlib.import_module(f"base_dir.pipeline.{self.opt['PIPELINE']}")
-        pipeline_class = getattr(pipeline_module, self.opt['PIPELINE'])
-        logger.info(f"Pipeline for training: {self.opt['PIPELINE']}")
-        self.pipeline = pipeline_class(self.opt)
+        # pipeline_module = importlib.import_module(f"base_dir.pipeline.{self.opt['PIPELINE']}")
+        # pipeline_class = getattr(pipeline_module, self.opt['PIPELINE'])
+        # logger.info(f"Pipeline for training: {self.opt['PIPELINE']}")
+        # self.pipeline = pipeline_class(self.opt)
+
+        from pipeline.XDecoderPipeline import XDecoderPipeline
+        self.pipeline = XDecoderPipeline(self.opt)
+
+        register_coco_panoptic_annos_caption_grounding_sem_seg("coco_",
+                                                               self.get_metadata(),
+                                                               '/content/drive/MyDrive/dataset/MRI/train/images/',
+                                                               '/content/drive/MyDrive/dataset/MRI/train/panoptic/',
+                                                               '/content/drive/MyDrive/dataset/MRI/train/panoptic/pgt.json',
+                                                               '/content/drive/MyDrive/dataset/MRI/train/semantic/',
+                                                               '/content/datasets/custom/captions.json',
+                                                               '/content/drive/MyDrive/dataset/MRI/train/grounding.json',
+                                                               '/content/datasets/xdecoder_data/coco/annotations/caption_class_similarity.pth',
+                                                               '/content/drive/MyDrive/dataset/MRI/train/instances.json',
+                                                               )
+
+        register_all_sunrgbd_seg('/content/drive/MyDrive/dataset/MRI/',
+                                 '/content/drive/MyDrive/dataset/MRI/validation/panoptic/pgt.json')
+
+    def get_metadata(self, ):
+        meta = {}
+        thing_classes = [k["name"] for k in CUSTOM_DATASET_META_DATA if k["isthing"] == 1]
+        thing_colors = [k["color"] for k in CUSTOM_DATASET_META_DATA if k["isthing"] == 1]
+        stuff_classes = [k["name"] for k in CUSTOM_DATASET_META_DATA]
+        stuff_colors = [k["color"] for k in CUSTOM_DATASET_META_DATA]
+
+        meta["thing_classes"] = thing_classes
+        meta["thing_colors"] = thing_colors
+        meta["stuff_classes"] = stuff_classes
+        meta["stuff_colors"] = stuff_colors
+
+        # Convert category id for training:
+        #   category id: like semantic segmentation, it is the class id for each
+        #   pixel. Since there are some classes not used in evaluation, the category
+        #   id is not always contiguous and thus we have two set of category ids:
+        #       - original category id: category id in the original dataset, mainly
+        #           used for evaluation.
+        #       - contiguous category id: [0, #classes), in order to train the linear
+        #           softmax classifier.
+        thing_dataset_id_to_contiguous_id = {}
+        stuff_dataset_id_to_contiguous_id = {}
+
+        for i, cat in enumerate(__COCO_CATEGORIES):
+            if cat["isthing"]:
+                thing_dataset_id_to_contiguous_id[cat["id"]] = i
+            # else:
+            #     stuff_dataset_id_to_contiguous_id[cat["id"]] = i
+
+            # in order to use sem_seg evaluator
+            stuff_dataset_id_to_contiguous_id[cat["id"]] = i
+
+        meta["thing_dataset_id_to_contiguous_id"] = thing_dataset_id_to_contiguous_id
+        meta["stuff_dataset_id_to_contiguous_id"] = stuff_dataset_id_to_contiguous_id
+
+        return meta
 
     def eval(self, ):
         logger.info('-----------------------------------------------')

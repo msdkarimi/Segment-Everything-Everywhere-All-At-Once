@@ -58,7 +58,7 @@ class BDDSemDatasetMapper:
         self.pixel_std = torch.tensor(std)[:,None,None]
 
         t = []
-        t.append(transforms.Resize(self.min_size_test, interpolation=Image.BICUBIC))
+        t.append(transforms.Resize((self.min_size_test, self.min_size_test), interpolation=Image.BICUBIC))
         self.transform = transforms.Compose(t)
     
     @classmethod

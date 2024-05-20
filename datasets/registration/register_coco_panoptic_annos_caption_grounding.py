@@ -225,6 +225,6 @@ def register_all_coco_panoptic_annos_caption_grounding_sem_seg(root):
             instances_json,
         )
 
-
-_root = os.getenv("DATASET", "datasets")
-register_all_coco_panoptic_annos_caption_grounding_sem_seg(_root)
+#
+# _root = os.getenv("DATASET", "datasets")
+# register_all_coco_panoptic_annos_caption_grounding_sem_seg(_root)
