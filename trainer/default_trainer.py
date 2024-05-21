@@ -361,7 +361,7 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
 
                     if results["bdd10k_val_sem_seg/sem_seg"]["sem_seg"]["mIoU"] > best_mIOU:
                         best_mIOU = results["bdd10k_val_sem_seg/sem_seg"]["sem_seg"]["mIoU"]
-                        self.models['default'].save_pretrained(self.opt["SAVE_DIR"], "best")
+                        self.models['default'].save_pretrained(f'{self.opt["SAVE_DIR"]}', "best")
 
                     if self.opt['rank'] == 0 and self.opt['WANDB']:
                         wandb.log(results)
