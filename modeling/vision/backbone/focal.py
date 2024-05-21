@@ -16,6 +16,7 @@ from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 
 from detectron2.utils.file_io import PathManager
 from detectron2.modeling import BACKBONE_REGISTRY, Backbone, ShapeSpec
+from .bb_adopter import Adapter, Adapter_Layer
 
 from .build import register_backbone
 
@@ -135,7 +136,8 @@ class FocalModulationBlock(nn.Module):
                  use_postln=False, use_postln_in_modulation=False,
                  scaling_modulator=False, 
                  use_layerscale=False, 
-                 layerscale_value=1e-4):
+                 layerscale_value=1e-4,
+                 fine_tune_modulation_block=False):
         super().__init__()
         self.dim = dim
         self.mlp_ratio = mlp_ratio
@@ -162,6 +164,8 @@ class FocalModulationBlock(nn.Module):
         if self.use_layerscale:
             self.gamma_1 = nn.Parameter(layerscale_value * torch.ones((dim)), requires_grad=True)
             self.gamma_2 = nn.Parameter(layerscale_value * torch.ones((dim)), requires_grad=True)
+        if fine_tune_modulation_block:
+            self.adopter_layer = Adapter_Layer(dim)
 
     def forward(self, x):
         """ Forward function.
@@ -180,7 +184,14 @@ class FocalModulationBlock(nn.Module):
         x = x.view(B, H, W, C)
         
         # FM
-        x = self.modulation(x).view(B, H * W, C)
+        # x = self.modulation(x).view(B, H * W, C)
+
+        if hasattr(self.__class__, 'adopter_layer'):
+            x = self.modulation(x)
+            x = self.adopter_layer(x).view(B, H * W, C)
+        else:
+            x = self.modulation(x).view(B, H * W, C)
+
         if self.use_postln:
             x = self.norm1(x)
 
@@ -226,7 +237,8 @@ class BasicLayer(nn.Module):
                  use_postln_in_modulation=False, 
                  scaling_modulator=False,
                  use_layerscale=False,                   
-                 use_checkpoint=False
+                 use_checkpoint=False,
+                 fine_tune_modulation_block=False,
         ):
         super().__init__()
         self.depth = depth
@@ -245,7 +257,9 @@ class BasicLayer(nn.Module):
                 use_postln_in_modulation=use_postln_in_modulation, 
                 scaling_modulator=scaling_modulator,
                 use_layerscale=use_layerscale, 
-                norm_layer=norm_layer)
+                norm_layer=norm_layer,
+                fine_tune_modulation_block=fine_tune_modulation_block
+            )
             for i in range(depth)])
 
         # patch merging layer
@@ -381,7 +395,8 @@ class FocalNet(nn.Module):
                  use_postln_in_modulation=False, 
                  scaling_modulator=False,
                  use_layerscale=False, 
-                 use_checkpoint=False, 
+                 use_checkpoint=False,
+                 fine_tune_modulation_block=False,
         ):
         super().__init__()
 
@@ -421,7 +436,9 @@ class FocalNet(nn.Module):
                 use_postln_in_modulation=use_postln_in_modulation,
                 scaling_modulator=scaling_modulator,
                 use_layerscale=use_layerscale, 
-                use_checkpoint=use_checkpoint)
+                use_checkpoint=use_checkpoint,
+                fine_tune_modulation_block=fine_tune_modulation_block
+            )
             self.layers.append(layer)
 
         num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
@@ -612,6 +629,10 @@ class D2FocalNet(FocalNet, Backbone):
         out_indices = cfg['BACKBONE']['FOCAL']['OUT_INDICES']
         scaling_modulator = cfg['BACKBONE']['FOCAL'].get('SCALING_MODULATOR', False)
 
+        # fine-tune argument
+        fine_tune = cfg['BACKBONE']['FOCAL']['FINE_TUNE']
+
+
         super().__init__(
             pretrain_img_size,
             patch_size,
@@ -632,6 +653,8 @@ class D2FocalNet(FocalNet, Backbone):
             scaling_modulator=scaling_modulator,
             use_layerscale=cfg['BACKBONE']['FOCAL']['USE_LAYERSCALE'], 
             use_checkpoint=use_checkpoint,
+            fine_tune_modulation_block=fine_tune,
+
         )
 
         self._out_features = cfg['BACKBONE']['FOCAL']['OUT_FEATURES']

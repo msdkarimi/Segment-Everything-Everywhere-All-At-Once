@@ -8,7 +8,7 @@
 # Define Test/Trainer/Saving
 PIPELINE: XDecoderPipeline
 TRAINER: xdecoder
-SAVE_DIR: '../../data/output/test'
+SAVE_DIR: '/content/data/output/test'
 base_path: "./"
 
 # Resume Logistic
@@ -74,6 +74,7 @@ MODEL:
       USE_LAYERSCALE: True
       OUT_FEATURES: ["res2", "res3", "res4", "res5"]
       OUT_INDICES: [0, 1, 2, 3]
+      FINE_TUNE: False
   ENCODER:
     NAME: transformer_encoder_fpn
     IGNORE_VALUE: 255
