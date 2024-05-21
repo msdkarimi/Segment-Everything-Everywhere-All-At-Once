@@ -193,6 +193,9 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
         self.train_params['optim_steps'][model_name] += 1
         self.lr_schedulers[model_name].step()
 
+    def contains_all_keywords(self, text, keywords):
+        return all(keyword in text for keyword in keywords)
+
     def train_step(self, batch):
         self.grad_acc_batches.append(batch) # support batch accumulation
 
@@ -200,6 +203,21 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
             # set all modules and criteria into training mode
             for model_name in self.model_names:
                 self.models[model_name].train()
+
+
+            for name, param in self.models['default'].named_parameters():
+                # if self.contains_all_keywords(name, ["backbone", "modulation_adopter"]):
+                #     param.requires_grad = True
+                #
+                # if self.contains_all_keywords(name, ["backbone", "ffn_adopter"]):
+                #     param.requires_grad = True
+                #
+                # if self.contains_all_keywords(name, ["backbone", "blocks", "norm"]):
+                #     param.requires_grad = True
+
+                if self.contains_all_keywords(name, ["backbone", "adopter_layer"]):
+                    param.requires_grad = True
+
 
             assert len(self.grad_acc_batches) == self.grad_acc_steps
 

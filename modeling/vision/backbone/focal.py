@@ -186,7 +186,7 @@ class FocalModulationBlock(nn.Module):
         # FM
         # x = self.modulation(x).view(B, H * W, C)
 
-        if hasattr(self.__class__, 'adopter_layer'):
+        if hasattr(self, 'adopter_layer'):
             x = self.modulation(x)
             x = self.adopter_layer(x).view(B, H * W, C)
         else:
