@@ -198,3 +198,60 @@ class MLP(nn.Module):
         for i, layer in enumerate(self.layers):
             x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
         return x
+
+class Adapter (nn.Module):
+    def __init__(self, input_dim, residual=False, ln_input_output=True, dropout=0.1):
+        super(Adapter, self).__init__()
+
+        self.dropout = nn.Dropout(dropout)
+
+        self.ln_input_output = ln_input_output
+        self.residual = residual
+
+        if ln_input_output:
+            self.layer_norm_input = nn.LayerNorm(input_dim)
+            self.layer_norm_output = nn.LayerNorm(input_dim)
+            self.scale = nn.Parameter(torch.ones(1))
+
+        self.down_proj = nn.Linear(input_dim, input_dim//2)
+
+        self.non_linear_func = nn.ReLU()
+
+        self.up_proj = nn.Linear(input_dim//2, input_dim)
+
+        self._init()
+
+    def _init(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out')
+
+
+    def forward(self, x):
+        if self.ln_input_output:
+            output = self.forward_with_ln(x)
+        else:
+            output = self.forward_without_ln(x)
+
+        if self.residual:
+            output += x
+        else:
+            output
+
+        return output
+
+    def forward_with_ln(self, x):
+        down = self.down_proj(self.layer_norm_input(x))
+        down = self.non_linear_func(down)
+        drop_out = self.dropout(down)
+        up = self.up_proj(drop_out)
+        up = up * self.scale
+        output = self.layer_norm_output(up)
+        return output
+
+    def forward_without_ln(self, x):
+        down = self.down_proj(x)
+        down = self.non_linear_func(down)
+        drop_out = self.dropout(down)
+        up = self.up_proj(drop_out)
+        return up

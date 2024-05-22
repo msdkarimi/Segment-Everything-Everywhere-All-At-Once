@@ -16,7 +16,7 @@ from detectron2.layers import Conv2d
 import fvcore.nn.weight_init as weight_init
 
 from .build import register_decoder
-from .modules import SelfAttentionLayer, CrossAttentionLayer, FFNLayer, MLP
+from .modules import SelfAttentionLayer, CrossAttentionLayer, FFNLayer, MLP, Adapter
 from .prototype.attention_data_struct_seemv1 import AttentionDataStruct
 from ..utils import rand_sample, prepare_features, configurable
 from ..modules import PositionEmbeddingSine
@@ -45,6 +45,7 @@ class SEEMDecoder(nn.Module):
         enforce_input_project: bool,
         max_spatial_len: int,
         attn_arch: dict,
+        fine_tune,
     ):
         """
         NOTE: this interface is experimental.
@@ -79,6 +80,16 @@ class SEEMDecoder(nn.Module):
         self.transformer_cross_attention_layers = nn.ModuleList()
         self.transformer_ffn_layers = nn.ModuleList()
 
+        # fine-tune modules
+        if fine_tune:
+            self.transformer_ffn_layers_adapters = nn.ModuleList()
+            self.transformer_cross_attention_layers_adapters = nn.ModuleList()
+            self.transformer_self_attention_layers_adapters = nn.ModuleList()
+            self.predictions_heads_mask_embs_adapters = nn.ModuleList([Adapter(input_dim=dim_proj,
+                                                                               ln_input_output=True,
+                                                                               residual=False)])
+
+
         for _ in range(self.num_layers):
             self.transformer_self_attention_layers.append(
                 SelfAttentionLayer(
@@ -106,6 +117,33 @@ class SEEMDecoder(nn.Module):
                     normalize_before=pre_norm,
                 )
             )
+
+            # adapters
+            if fine_tune:
+                self.transformer_ffn_layers_adapters.append(
+                    Adapter(input_dim=dim_proj,
+                            residual=True,
+                            ln_input_output=False)
+                )
+
+                self.transformer_self_attention_layers_adapters.append(
+                    Adapter(input_dim=dim_proj,
+                            residual=True,
+                            ln_input_output=False)
+                )
+
+                self.transformer_cross_attention_layers_adapters.append(
+                    Adapter(input_dim=dim_proj,
+                            residual=True,
+                            ln_input_output=False)
+                )
+
+                self.predictions_heads_mask_embs_adapters.append(
+                    Adapter(input_dim=dim_proj,
+                            ln_input_output=True,
+                            residual=False)
+                )
+
 
         self.decoder_norm = nn.LayerNorm(hidden_dim)
 
@@ -195,6 +233,9 @@ class SEEMDecoder(nn.Module):
 
         # attn data struct
         ret["attn_arch"] = cfg['ATTENTION_ARCH']
+
+        # fine-tuning option
+        ret["fine_tune"] = dec_cfg['FINE_TUNE']
 
         return ret
 
@@ -317,6 +358,15 @@ class SEEMDecoder(nn.Module):
                 memory_key_padding_mask=None,  # here we do not apply masking on padded region
                 pos=pos[level_index], query_pos=query_embed
             )
+
+            # adapter
+            if hasattr(self, 'transformer_cross_attention_layers_adapters'):
+                print('363 - is used transformer_cross_attention_layers_adapters')
+                output = self.transformer_cross_attention_layers_adapters[i](output)
+            else:
+                print('366 - not used transformer_cross_attention_layers_adapters')
+                output = output
+
             self.attention_data.update_variables(output, 'cross_attn')
 
             # SELF ATTENTION
@@ -337,10 +387,27 @@ class SEEMDecoder(nn.Module):
                 tgt_key_padding_mask=None,
                 query_pos=query_embed)
 
+            # adapter
+            if hasattr(self, 'transformer_self_attention_layers_adapters'):
+                print('392 - is used transformer_self_attention_layers_adapters')
+                output = self.transformer_self_attention_layers_adapters[i](output)
+            else:
+                print('395 - not used transformer_self_attention_layers_adapters')
+                output = output
+
             # FFN
             output = self.transformer_ffn_layers[i](
                 output
             )
+
+            #adapter
+            if hasattr(self, 'transformer_ffn_layers_adapters'):
+                print('405 - is used transformer_ffn_layers_adapters')
+                output = self.transformer_ffn_layers_adapters[i](output)
+            else:
+                print('408 - not used transformer_ffn_layers_adapters')
+                output = output
+
 
             self.attention_data.update_variables(output, 'self_attn')
             output, query_embed = self.attention_data.cross_attn_variables()
@@ -356,7 +423,17 @@ class SEEMDecoder(nn.Module):
         decoder_output = decoder_output.transpose(0, 1)
         class_embed = decoder_output @ self.class_embed
         outputs_class = self.lang_encoder.compute_similarity(class_embed)
-        mask_embed = self.mask_embed(decoder_output)
+
+        #adapter
+        if hasattr(self, 'predictions_heads_mask_embs_adapters'):
+            decoder_output_adapter = self.predictions_heads_mask_embs_adapters[layer_id + 1](decoder_output)
+            mask_embed = self.mask_embed(decoder_output)
+            mask_embed = mask_embed + decoder_output_adapter
+            print('432 - is used predictions_heads_mask_embs_adapters')
+        else:
+            mask_embed = self.mask_embed(decoder_output)
+            print('435 - not used predictions_heads_mask_embs_adapters')
+
         outputs_mask = torch.einsum("bqc,bchw->bqhw", mask_embed, mask_features)
         
         outputs_bbox = [None for i in range(len(outputs_mask))]
