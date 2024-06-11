@@ -361,10 +361,8 @@ class SEEMDecoder(nn.Module):
 
             # adapter
             if hasattr(self, 'transformer_cross_attention_layers_adapters'):
-                print('363 - is used transformer_cross_attention_layers_adapters')
                 output = self.transformer_cross_attention_layers_adapters[i](output)
             else:
-                print('366 - not used transformer_cross_attention_layers_adapters')
                 output = output
 
             self.attention_data.update_variables(output, 'cross_attn')
@@ -389,10 +387,8 @@ class SEEMDecoder(nn.Module):
 
             # adapter
             if hasattr(self, 'transformer_self_attention_layers_adapters'):
-                print('392 - is used transformer_self_attention_layers_adapters')
                 output = self.transformer_self_attention_layers_adapters[i](output)
             else:
-                print('395 - not used transformer_self_attention_layers_adapters')
                 output = output
 
             # FFN
@@ -402,10 +398,8 @@ class SEEMDecoder(nn.Module):
 
             #adapter
             if hasattr(self, 'transformer_ffn_layers_adapters'):
-                print('405 - is used transformer_ffn_layers_adapters')
                 output = self.transformer_ffn_layers_adapters[i](output)
             else:
-                print('408 - not used transformer_ffn_layers_adapters')
                 output = output
 
 
@@ -429,10 +423,8 @@ class SEEMDecoder(nn.Module):
             decoder_output_adapter = self.predictions_heads_mask_embs_adapters[layer_id + 1](decoder_output)
             mask_embed = self.mask_embed(decoder_output)
             mask_embed = mask_embed + decoder_output_adapter
-            print('432 - is used predictions_heads_mask_embs_adapters')
         else:
             mask_embed = self.mask_embed(decoder_output)
-            print('435 - not used predictions_heads_mask_embs_adapters')
 
         outputs_mask = torch.einsum("bqc,bchw->bqhw", mask_embed, mask_features)
         
