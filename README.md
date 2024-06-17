@@ -13,7 +13,7 @@ A brief introduction of all the generic and interactive segmentation tasks we ca
 ### 1-1 Language
     
 - The language architecture comprises a transformer model that employs CLIP as its tokenizer. Its primary function is to calculate embeddings for sentences related to grounding tasks and determine the similarity between a provided visual embedding (such as a combination of image features and grounding sentence) and the embeddings of each class. These class embeddings could represent either the class name or a sentence created through prompt engineering, mirroring the similarity computation process found in CLIP.<br>
-- In original SEEM language encoder is kept frozen.
+- SEEM adopts the Unified Contrastive Learning as language encoder, the weight of the model is frozen in SEEM
 
 
 ### 1-2 Vision 
@@ -43,10 +43,7 @@ A brief introduction of all the generic and interactive segmentation tasks we ca
 - In original SEEM this module is trainable.
 
 ## 2. Fine-Tuning
-- To fine-tune the SEEM model, we employed adapters.
-- During this fine-tuning phase, we maintained the SEEM-Decoder in a frozen state, except for the layerNorms. As a result, the only trainable components included the adapters and layerNorms within the SEEM-Decoder.
-- Specifically, we placed one adapter after cross-attention, another following self-attention, and a third after the MLP.
-- Additionally, within the prediction head, we introduced an adapter running parallel to the mask_embedding, which functions as an MLP.
+ to be done
 
 ## 3. Dataset
     
@@ -78,12 +75,27 @@ A brief introduction of all the generic and interactive segmentation tasks we ca
 
 To run train:
 
-    python entry.py train \
+The main things needs to be careful about to run the train script is: 
+#### 4-1 MODEL.ENCODER.NUM_CLASSES
+
+>The value for MODEL.ENCODER.NUM_CLASSES msut be equal to the number of total categories.  
+
+#### 4-2 COCO.INPUT.IMAGE_SIZE
+>COCO.INPUT.IMAGE_SIZE, can ranges between 1024 to 256. If there is computational limitations, setting COCO.INPUT.IMAGE_SIZE to 256 will accupy less resources.  
+
+#### 4-3 Fine-Tuning Strategies
+> By modifying the values MODEL.BACKBONE.FOCAL.FINE_TUNE  and MODEL.DECODER.FINE_TUNE different fine-tuning strategies can be adapted
+    
+    !python entry.py train \
     --conf_files configs/seem/focall_unicl_lang_v1.yaml \
     --overrides \
+    COCO.INPUT.IMAGE_SIZE 256 \
+    MODEL.DECODER.HIDDEN_DIM 512 \
+    MODEL.ENCODER.CONVS_DIM 512 \
+    MODEL.ENCODER.MASK_DIM 512 \
     MODEL.DECODER.LVIS.ENABLED False \
-    TEST.BATCH_SIZE_TOTAL 4 \
-    TRAIN.BATCH_SIZE_TOTAL 2 \
+    TEST.BATCH_SIZE_TOTAL 1 \
+    TRAIN.BATCH_SIZE_TOTAL 4 \
     TRAIN.BATCH_SIZE_PER_GPU 2 \
     SOLVER.BASE_LR 0.0001 \
     SOLVER.FIX_PARAM.backbone True \
@@ -100,7 +112,14 @@ To run train:
     MODEL.DECODER.SPATIAL.MAX_ITER 5 \
     ATTENTION_ARCH.QUERY_NUMBER 3 \
     STROKE_SAMPLER.MAX_CANDIDATE 10 \
-    MODEL.ENCODER.NUM_CLASSES 29 \
+    MODEL.ENCODER.NUM_CLASSES ? \
     SOLVER.MAX_NUM_EPOCHS 30 \
+    LOG_EVERY 100 \
+    MODEL.DECODER.TEST.PANOPTIC_ON False \
+    MODEL.DECODER.TEST.INSTANCE_ON False \
+    WANDB True \
     WEIGHT True \
-    RESUME_FROM datasets/xdecoder_data/pretrained/seem_focall_v1.pt
+    EVAL_AT_START False \
+    MODEL.BACKBONE.FOCAL.FINE_TUNE True \
+    MODEL.DECODER.FINE_TUNE False \
+    RESUME_FROM /path/to/pretrain.pt
