@@ -116,3 +116,49 @@ The main things needs to be careful about to run the train script is:
     MODEL.BACKBONE.FOCAL.FINE_TUNE True \
     MODEL.DECODER.FINE_TUNE False \
     RESUME_FROM /path/to/pretrain.pt
+
+
+## 5.	Miscellaneous
+
+In this section, we will address additional essential information and configurations needed to prepare the model for execution.
+
+### 5.1	Constant Values
+
+By constant value here we refer to value that are used to feed the model like class names of other meta data related to class names. The file containing these values is situated at ./utils/constants.py.
+
+- One vital constant is the array of class (category) names. These class names will be utilized to populate predefined neutral templates. Ultimately, employing a language encoder, the embeddings of each template filled with class names will be used to calculate the similarity between the visual features and language embeddings.
+- Other important constant is information about all categories.  Is information later will be used by dataset register and dataset mapper to extract the meta data related to each class.
+
+### 5.2 Dataset name
+
+In order to specify the dataset which, we are interested to use during train of validation, under the following config file, the name of datasets should be specified under the key named “DATASETS”, by setting the sub-keys called “TRAIN” and “TEST”.
+- ./configs/seem/focall_unicl_lang_v1.yaml
+
+### 5.3 Evaluation Hooks
+
+To select the task (panoptic segmentation, semantic segmentation, or instance segmentation) on which we intend to apply the SEEM model using our dataset, we must modify or include the registered dataset name to match the desired task. The file associated with this matter can be found at ./pipeline/utils/misc.py.
+
+### 5.4	Hard Codes
+
+In the main project code, there are amount of hard coding based on the dataset name. The following sections of the project are where these instances 
+
+> To obtain the category names and feed them to the language encoder, the function ./get_classes_name(name) in the file ./modeling/utils/misc.py is used. This function takes the name of the registered dataset and returns a list of categorynames.datasets/build.py
+
+### 5.5 WandB
+In order to visuality monitor the model performance during train process, two things needs to be specified:
+
+- First, in the command in the terminal WANDB True must be used to enable logging with wandb framework.
+- Second, in the ./entry.py, the argument entity must for method called init_wandb() must be aligned with the wandb account that is going to be used in the logging process
+- Finally, for login in the wandb, environment variable os.environ['WANDB_KEY'] = ‘token’, token can be obtained in the wandb website.
+
+### 5.6 Link of required files
+
+The link for pretrain weights of SEEM:
+> https://huggingface.co/xdecoder/SEEM/resolve/main/seem_focall_v1.pt
+
+The link for caption_class_similarity:
+
+After downloading the file it should be located in the following directory"
+- /content/datasets/xdecoder_data/coco/annotations
+
+> https://huggingface.co/xdecoder/X-Decoder/resolve/main/caption_class_similarity.pth
