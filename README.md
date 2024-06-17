@@ -43,7 +43,14 @@ A brief introduction of all the generic and interactive segmentation tasks we ca
 - In original SEEM this module is trainable.
 
 ## 2. Fine-Tuning
- to be done
+ There are a total of four distinct strategies available to fine-tune the SEEM model, achievable by adjusting the fine-tuning parameters (further details in the training section).
+### 2-1 Freeze vision backbone, adapter fine-tuning for segmentation head
+
+### 2-2 Adapter fine-tuning for backbone, adapter fine-tuning for segmentation head 
+
+### 2-3 Freeze vision backbone, fine-tune whole segmentation head
+
+### 2-4 Adapter fine-tuning for vision backbone, fine-tune whole segmentation head
 
 ## 3. Dataset
     
