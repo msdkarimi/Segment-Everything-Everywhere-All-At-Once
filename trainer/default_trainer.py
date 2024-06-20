@@ -67,20 +67,36 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
         from pipeline.XDecoderPipeline import XDecoderPipeline
         self.pipeline = XDecoderPipeline(self.opt)
 
+        # register_coco_panoptic_annos_caption_grounding_sem_seg("coco_2017_train",
+        #                                                        self.get_metadata(),
+        #                                                        '/content/drive/MyDrive/dataset/MRI/train/images/',
+        #                                                        '/content/drive/MyDrive/dataset/MRI/train/panoptic/',
+        #                                                        '/content/drive/MyDrive/dataset/MRI/train/panoptic/pgt.json',
+        #                                                        '/content/drive/MyDrive/dataset/MRI/train/semantic/',
+        #                                                        '/content/datasets/custom/captions.json',
+        #                                                        '/content/drive/MyDrive/dataset/MRI/train/grounding.json',
+        #                                                        '/content/datasets/xdecoder_data/coco/annotations/caption_class_similarity.pth',
+        #                                                        '/content/drive/MyDrive/dataset/MRI/train/instances.json',
+        #                                                        )
+        #
+        # register_all_sunrgbd_seg('/content/drive/MyDrive/dataset/MRI/',
+        #                          '/content/drive/MyDrive/dataset/MRI/validation/panoptic/pgt.json')
+
+
         register_coco_panoptic_annos_caption_grounding_sem_seg("coco_2017_train",
                                                                self.get_metadata(),
-                                                               '/content/drive/MyDrive/dataset/MRI/train/images/',
-                                                               '/content/drive/MyDrive/dataset/MRI/train/panoptic/',
-                                                               '/content/drive/MyDrive/dataset/MRI/train/panoptic/pgt.json',
-                                                               '/content/drive/MyDrive/dataset/MRI/train/semantic/',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/images/',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/panoptic/',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/panoptic/pgt.json',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/semantic/',
                                                                '/content/datasets/custom/captions.json',
-                                                               '/content/drive/MyDrive/dataset/MRI/train/grounding.json',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/grounding.json',
                                                                '/content/datasets/xdecoder_data/coco/annotations/caption_class_similarity.pth',
-                                                               '/content/drive/MyDrive/dataset/MRI/train/instances.json',
+                                                               '/content/datasets/custom/captions.json',
                                                                )
 
-        register_all_sunrgbd_seg('/content/drive/MyDrive/dataset/MRI/',
-                                 '/content/drive/MyDrive/dataset/MRI/validation/panoptic/pgt.json')
+        register_all_sunrgbd_seg('/content/drive/MyDrive/synthetic_datasets/DARE_1K/',
+                                 '/content/drive/MyDrive/synthetic_datasets/DARE_1K/validation/panoptic/pgt.json')
 
     def get_metadata(self, ):
         meta = {}

@@ -1,14 +1,30 @@
-TRAIN_CLASSES = ["void", "liver", "right kidney", "left kidney", "spleen"]
-VALIDATION_CLASSES = ["void", "liver", "right kidney", "left kidney", "spleen"]
+# TRAIN_CLASSES = ["void", "liver", "right kidney", "left kidney", "spleen"]
+TRAIN_CLASSES = ["background", "light mold", "dark mold", "light stain", "dark stain", "liquid spillage", "peeling", "broken pipe", "raised", "pipe"]
+# VALIDATION_CLASSES = ["void", "liver", "right kidney", "left kidney", "spleen"]
+VALIDATION_CLASSES = ["background", "light mold", "dark mold", "light stain", "dark stain", "liquid spillage", "peeling", "broken pipe", "raised", "pipe"]
 
 COCO_PANOPTIC_CLASSES = TRAIN_CLASSES
 BDD_SEM = VALIDATION_CLASSES
 
-CUSTOM_DATASET_META_DATA = [{"color": [10, 10, 10], "isthing": 0, "id": 1, "name": "void"},
-                  {"color": [0, 255, 0], "isthing": 0, "id": 2, "name": "liver"},
-                  {"color": [100, 0, 0], "isthing": 1, "id": 3, "name": "right kidney"},
-                  {"color": [0, 0, 100], "isthing": 1, "id": 4, "name": "left kidney"},
-                  {"color": [0, 100, 0], "isthing": 1, "id": 5, "name": "spleen"}]
+# CUSTOM_DATASET_META_DATA = [{"color": [10, 10, 10], "isthing": 0, "id": 1, "name": "void"},
+#                   {"color": [0, 255, 0], "isthing": 0, "id": 2, "name": "liver"},
+#                   {"color": [100, 0, 0], "isthing": 1, "id": 3, "name": "right kidney"},
+#                   {"color": [0, 0, 100], "isthing": 1, "id": 4, "name": "left kidney"},
+#                   {"color": [0, 100, 0], "isthing": 1, "id": 5, "name": "spleen"}]
+
+
+CUSTOM_DATASET_META_DATA = [
+  {"color": [255, 255, 255], "isthing": 0, "id": 1, "name": "background"},
+  {"color": [240, 230, 0], "isthing": 0, "id": 2, "name": "light mold"},
+  {"color": [90, 90, 0], "isthing": 0, "id": 3, "name": "dark mold"},
+  {"color": [160, 160, 160], "isthing": 0, "id": 4, "name": "light stain"},
+  {"color": [77, 77, 77], "isthing": 0, "id": 5, "name": "dark stain"},
+  {"color": [0,100, 255], "isthing": 0, "id": 6, "name": "liquid spillage"},
+  {"color": [200, 0, 200], "isthing": 0, "id": 7, "name": "peeling"},
+  {"color": [0, 255, 150], "isthing": 0, "id": 8, "name": "broken pipe"},
+  {"color": [255, 50, 50], "isthing": 0, "id": 9, "name": "raised"},
+  {"color": [0, 0, 150], "isthing": 0, "id": 10, "name": "pipe"}
+]
 
 
 IMAGENET_DEFAULT_TEMPLATES = [
