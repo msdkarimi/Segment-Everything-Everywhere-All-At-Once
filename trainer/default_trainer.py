@@ -85,12 +85,12 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
 
         register_coco_panoptic_annos_caption_grounding_sem_seg("coco_2017_train",
                                                                self.get_metadata(),
-                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/images/',
-                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/panoptic/',
-                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/panoptic/pgt.json',
-                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/semantic/',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_HK/train/images/',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_HK/train/panoptic/',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_HK/train/panoptic/pgt.json',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_HK/train/semantic/',
                                                                '/content/datasets/custom/captions.json',
-                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_1K/train/grounding.json',
+                                                               '/content/drive/MyDrive/synthetic_datasets/DARE_HK/train/grounding.json',
                                                                '/content/datasets/xdecoder_data/coco/annotations/caption_class_similarity.pth',
                                                                '/content/datasets/custom/captions.json',
                                                                )
