@@ -8,7 +8,8 @@
 # Define Test/Trainer/Saving
 PIPELINE: XDecoderPipeline
 TRAINER: xdecoder
-SAVE_DIR: '/content/data/output/test'
+#SAVE_DIR: '/content/data/output/test'
+SAVE_DIR: '../../data/output/test'
 base_path: "./"
 
 # Resume Logistic
