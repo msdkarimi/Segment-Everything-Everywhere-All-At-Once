@@ -140,6 +140,8 @@ class SemSegEvaluator(DatasetEvaluator):
 
         acc = np.full(self._num_classes, np.nan, dtype=np.float)
         iou = np.full(self._num_classes, np.nan, dtype=np.float)
+        recall = np.full(self._num_classes, np.nan, dtype=np.float)
+
         tp = self._conf_matrix.diagonal()[:-1].astype(np.float)
         pos_gt = np.sum(self._conf_matrix[:-1, :-1], axis=0).astype(np.float)
         class_weights = pos_gt / np.sum(pos_gt)
