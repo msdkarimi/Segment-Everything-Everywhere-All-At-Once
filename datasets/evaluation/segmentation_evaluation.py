@@ -164,6 +164,18 @@ class SemSegEvaluator(DatasetEvaluator):
         for i, name in enumerate(self._class_names):
             res["ACC-{}".format(name)] = 100 * acc[i]
 
+        # new validation metrics are added
+        res["mACC"] = 100 * macc
+        res["pACC"] = 100 * pacc
+        for i, name in enumerate(self._class_names):
+            res["Recall-{}".format(name)] = 100 * acc[i]
+
+        recall_valid = pos_pred > 0
+        recall[recall_valid] = tp[recall_valid] / pos_pred[recall_valid]
+        for i, name in enumerate(self._class_names):
+            res["Precision-{}".format(name)] = 100 * recall[i]
+
+
         if self._output_dir:
             file_path = os.path.join(self._output_dir, "sem_seg_evaluation.pth")
             with PathManager.open(file_path, "wb") as f:

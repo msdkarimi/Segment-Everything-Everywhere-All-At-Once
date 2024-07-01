@@ -288,6 +288,9 @@ class COCOPanopticInteractiveDatasetMapper:
                 mode = 'text'
                 random.shuffle(grounding_anno)
                 for ann in grounding_anno:
+                    # following two lines are added because some generated masks has coordinates less than 8, so we skip them
+                    if len(ann['segmentation'][0]) <= 7:
+                        continue
                     rle = coco_mask.frPyObjects(
                         ann['segmentation'], dataset_dict['height'], dataset_dict['width'])
                     m = coco_mask.decode(rle)
