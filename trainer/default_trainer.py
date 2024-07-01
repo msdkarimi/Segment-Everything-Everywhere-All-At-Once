@@ -32,7 +32,6 @@ from .distributed_trainer import DistributedTrainer
 from .utils_trainer import UtilsTrainer
 from .utils.misc import *
 from .utils.serialization import JSONEncoder, filter_jsonable
-from pathlib import Path
 from utils.constants import CUSTOM_DATASET_META_DATA
 from detectron2.data import MetadataCatalog, DatasetCatalog
 from datasets.registration.register_bdd100k_semseg import register_all_sunrgbd_seg
@@ -66,12 +65,6 @@ class DefaultTrainer(UtilsTrainer, DistributedTrainer):
 
         from pipeline.XDecoderPipeline import XDecoderPipeline
         self.pipeline = XDecoderPipeline(self.opt)
-
-
-        Path("../../datasets/xdecoder_data").mkdir(parents=True, exist_ok=True)
-        Path("../../datasets/xdecoder_data/coco/annotations").mkdir(parents=True, exist_ok=True)
-        Path("../../datasets/xdecoder_data/pretrained").mkdir(parents=True, exist_ok=True)
-        Path("../../data/output/test").mkdir(parents=True, exist_ok=True)
 
         # register_coco_panoptic_annos_caption_grounding_sem_seg("coco_2017_train",
         #                                                        self.get_metadata(),
